@@ -8,6 +8,8 @@ import (
 	"os"
 )
 
+// TODO: Graceful restart would be nice - http://grisha.org/blog/2014/06/03/graceful-restart-in-golang/
+
 // Logger interface for a simple logger (the stdlib log pkg and the fragmenta log pkg conform)
 type Logger interface {
 	Printf(format string, args ...interface{})
@@ -27,6 +29,7 @@ type Server struct {
 	// Server configs - access with Config(string)
 	configProduction  map[string]string
 	configDevelopment map[string]string
+	configTest        map[string]string
 }
 
 // New creates a new server instance
@@ -44,6 +47,7 @@ func New() (*Server, error) {
 		production:        prod,
 		configProduction:  make(map[string]string),
 		configDevelopment: make(map[string]string),
+		configTest:        make(map[string]string),
 		Logger:            log.New(os.Stderr, "fragmenta: ", log.LstdFlags), // default to a stderr logger
 	}
 

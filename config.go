@@ -42,10 +42,14 @@ func (s *Server) Config(key string) string {
 	return s.Configuration()[key]
 }
 
+func (s *Server) configPath() string {
+	return "secrets/fragmenta.json"
+}
+
 // Read our config file and set up the server accordingly
 func (s *Server) readConfig() error {
 
-	path := "secrets/fragmenta.json"
+	path := s.configPath()
 
 	// Read the config json file
 	file, err := ioutil.ReadFile(path)
@@ -61,6 +65,7 @@ func (s *Server) readConfig() error {
 
 	s.configDevelopment = data["development"]
 	s.configProduction = data["production"]
+	s.configTest = data["test"]
 
 	// Update our port from the config port if we have it
 	portString := s.Config("port")
