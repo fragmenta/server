@@ -18,9 +18,26 @@ func (s *Server) Mode() string {
 	if s.production {
 		return "Production"
 	}
-
 	return "Development"
+}
 
+// SetupConfiguration accepts a hash of values, and writes dev, prod and test configurations to the fragmenta.json file
+// The current config must be empty for this to succeed
+func (s *Server) SetupConfiguration(params map[string]string) error {
+
+	// We do not allow config setup except when current config is empty
+	if len(s.configProduction) > 0 {
+		return fmt.Errorf("#error Configuration already set")
+	}
+
+	s.configProduction["db_adapter"] = params["db_adapter"]
+	s.configProduction["db_user"] = params["db_user"]
+	s.configProduction["hmac_key"] = "TEST RAND"
+
+	// Now write out to our config file
+	fmt.Sprintf("#config file writing %v", s.configProduction)
+
+	return nil
 }
 
 // Production tells the caller if this server is in production mode or not?

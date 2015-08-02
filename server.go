@@ -65,22 +65,30 @@ func New() (*Server, error) {
 	return s, err
 }
 
-// Log this format and arguments
-func (s *Server) Log(format string, v ...interface{}) {
-	// Call our internal logger with these arguments
+// Logf logs the message with the given arguments to our internal logger
+func (s *Server) Logf(format string, v ...interface{}) {
 	s.Logger.Printf(format, v...)
 }
 
-// Fatal logs this format and arguments, and then exits with status 1
-func (s *Server) Fatal(format string, v ...interface{}) {
-	// Call our internal logger with these arguments
+// Log logs the message to our internal logger - TODO - remove v ...interface{}
+func (s *Server) Log(format string, v ...interface{}) {
+	s.Logf(format, v...)
+}
+
+// Fatalf the message with the given arguments to our internal logger, and then exits with status 1
+func (s *Server) Fatalf(format string, v ...interface{}) {
 	s.Logger.Printf(format, v...)
 
 	// Now exit
 	os.Exit(1)
 }
 
-// Start the http server
+// Fatal logs the message, and then exits with status 1 TODO - remove v ...interface{}
+func (s *Server) Fatal(format string, v ...interface{}) {
+	s.Fatalf(format, v...)
+}
+
+// Start starts the http server on our given port
 func (s *Server) Start() error {
 	p := fmt.Sprintf(":%d", s.port)
 	return http.ListenAndServe(p, nil)
