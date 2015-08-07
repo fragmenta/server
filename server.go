@@ -70,9 +70,9 @@ func (s *Server) Logf(format string, v ...interface{}) {
 	s.Logger.Printf(format, v...)
 }
 
-// Log logs the message to our internal logger - TODO - remove v ...interface{}
-func (s *Server) Log(format string, v ...interface{}) {
-	s.Logf(format, v...)
+// Log logs the message to our internal logger
+func (s *Server) Log(message string) {
+	s.Logf(message)
 }
 
 // Fatalf the message with the given arguments to our internal logger, and then exits with status 1
@@ -83,9 +83,9 @@ func (s *Server) Fatalf(format string, v ...interface{}) {
 	os.Exit(1)
 }
 
-// Fatal logs the message, and then exits with status 1 TODO - remove v ...interface{}
-func (s *Server) Fatal(format string, v ...interface{}) {
-	s.Fatalf(format, v...)
+// Fatal logs the message, and then exits with status 1
+func (s *Server) Fatal(format string) {
+	s.Fatalf(format)
 }
 
 // Start starts the http server on our given port

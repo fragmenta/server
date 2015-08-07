@@ -17,7 +17,7 @@ func (s *Server) runSetup() {
 	http.Handle("/", s)
 	err := s.Start()
 	if err != nil {
-		s.Fatal("Error running setup", err)
+		s.Fatalf("Error running setup %s", err)
 	}
 
 }
@@ -40,7 +40,7 @@ func (s *Server) setupWithData(form url.Values) {
 
 	path, err := os.Getwd()
 	if err != nil {
-		s.Fatal("Error finding path", err)
+		s.Fatalf("Error finding path %s", err)
 	}
 
 	s.configDevelopment["db_version"] = "12"
@@ -76,7 +76,7 @@ func (s *Server) saveConfig() {
 
 	configsJSON, err := json.Marshal(configs)
 	if err != nil {
-		s.Fatal("Error finding path", err)
+		s.Fatalf("Error finding path %s", err)
 	}
 
 	fmt.Printf("c:%s\n", configsJSON)
@@ -93,7 +93,7 @@ func (s *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		// Process the posted form data in order to create our configuration and site
 		err := request.ParseForm()
 		if err != nil {
-			s.Fatal("Error parsing setup form", err)
+			s.Fatalf("Error parsing setup form %s", err)
 		}
 
 		s.setupWithData(request.Form)
