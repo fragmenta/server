@@ -90,10 +90,13 @@ func (s *Server) Fatal(format string) {
 }
 
 // Timef logs a time since starting, when used with defer at the start of a function to time
-// Usage: defer s.Timef("My message %s",time.Now())
-func (s *Server) Timef(format string, start time.Time) {
+// Usage: defer s.Timef(time.Now(),"Completed %s in %s",args...)
+func (s *Server) Timef(start time.Time, format string, v ...interface{}) {
 	end := time.Since(start).String()
-	s.Logf(format, end)
+	var args []interface{}
+	args = append(args, v...)
+	args = append(args, end) // time goes at the end
+	s.Logf(format, args...)
 }
 
 // Start starts the http server on our given port
