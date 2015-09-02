@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 // TODO: Graceful restart would be nice - http://grisha.org/blog/2014/06/03/graceful-restart-in-golang/
@@ -86,6 +87,13 @@ func (s *Server) Fatalf(format string, v ...interface{}) {
 // Fatal logs the message, and then exits with status 1
 func (s *Server) Fatal(format string) {
 	s.Fatalf(format)
+}
+
+// Timef logs a time since starting, when used with defer at the start of a function to time
+// Usage: defer s.Timef("My message %s",time.Now())
+func (s *Server) Timef(format string, start time.Time) {
+	end := time.Since(start).String()
+	s.Logf(format, end)
 }
 
 // Start starts the http server on our given port
