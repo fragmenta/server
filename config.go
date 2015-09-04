@@ -59,6 +59,24 @@ func (s *Server) Config(key string) string {
 	return s.Configuration()[key]
 }
 
+// ConfigInt returns the current configuration value as int64, or 0 if no value
+func (s *Server) ConfigInt(key string) int64 {
+	v := s.Config(key)
+	if v != "" {
+		i, err := strconv.ParseInt(v, 10, 64)
+		if err == nil {
+			return i
+		}
+	}
+	return 0
+}
+
+// ConfigBool returns the current configuration value as bool (yes=true, no=false), or false if no value
+func (s *Server) ConfigBool(key string) bool {
+	v := s.Config(key)
+	return (v == "yes")
+}
+
 func (s *Server) configPath() string {
 	return "secrets/fragmenta.json"
 }
