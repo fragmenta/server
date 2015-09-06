@@ -54,8 +54,6 @@ func New() (*Server, error) {
 
 	err := s.readConfig()
 	if err != nil {
-		// Run the setup, till we have collected enough information
-		s.runSetup()
 		return s, err
 	}
 	err = s.readArguments()
