@@ -88,7 +88,7 @@ func (s *Server) Fatal(format string) {
 }
 
 // Timef logs a time since starting, when used with defer at the start of a function to time
-// Usage: defer s.Timef(time.Now(),"Completed %s in %s",args...)
+// Usage: defer s.Timef("Completed %s in %s",time.Now(),args...)
 func (s *Server) Timef(format string, start time.Time, v ...interface{}) {
 	end := time.Since(start).String()
 	var args []interface{}
