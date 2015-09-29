@@ -101,5 +101,4 @@ func (s *Server) Timef(format string, start time.Time, v ...interface{}) {
 func (s *Server) Start() error {
 	p := fmt.Sprintf(":%d", s.port)
 	return http.ListenAndServe(p, nil)
-
 }
