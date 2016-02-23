@@ -35,12 +35,20 @@ type ScheduledAction func(Context)
 // Callers should call close(task) before exiting the app or to stop repeating the action.
 func At(f ScheduledAction, context Context, t time.Time, i time.Duration) chan struct{} {
 	task := make(chan struct{})
-
 	now := time.Now().UTC()
-	tillTime := t.Sub(now)
 
-	// We ignore the timer returned by AfterFunc
-	// Which means the caller cannot cancel mid-way through an action
+	// Check that t is not in the past, if it is increment it by interval until it is not
+	for now.Sub(t) > 0 {
+		t = t.Add(i)
+	}
+
+	// Log the first time we are scheduling for
+	if !context.Production() {
+		context.Logf("schedule: action registered for:%s", t)
+	}
+
+	// We ignore the timer returned by AfterFunc - so no cancelling, perhaps rethink this
+	tillTime := t.Sub(now)
 	time.AfterFunc(tillTime, func() {
 		// Call f at least once at the time specified
 		go f(context)
