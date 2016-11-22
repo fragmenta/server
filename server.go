@@ -97,8 +97,16 @@ func (s *Server) Timef(format string, start time.Time, v ...interface{}) {
 	s.Logf(format, args...)
 }
 
-// Start starts the http server on our given port
+// Start starts an http server on the given port
 func (s *Server) Start() error {
 	p := fmt.Sprintf(":%d", s.port)
 	return http.ListenAndServe(p, nil)
+}
+
+// StartTLS starts an https server on the given port
+func (s *Server) StartTLS() error {
+	port := fmt.Sprintf(":%d", s.port)
+	cert := s.Config("tls_cert")
+	key := s.Config("tls_key")
+	return http.ListenAndServeTLS(port, cert, key, nil)
 }
