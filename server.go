@@ -119,7 +119,14 @@ func (s *Server) Start() error {
 func (s *Server) StartTLS() error {
 	cert := s.Config("tls_cert")
 	key := s.Config("tls_key")
-	return s.ConfiguredTLSServer(nil).ListenAndServeTLS(cert, key)
+
+	// Set up a new http server
+	server := &http.Server{
+		// Set the port in the preferred string format
+		Addr: s.PortString(),
+	}
+
+	return server.ListenAndServeTLS(cert, key)
 }
 
 // StartTLSAutocert starts an https server on the given port
