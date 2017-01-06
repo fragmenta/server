@@ -176,7 +176,7 @@ func (s *Server) ConfiguredTLSServer(certManager *autocert.Manager) *http.Server
 			// Only use curves which have assembly implementations
 			CurvePreferences: []tls.CurveID{
 				tls.CurveP256,
-				tls.X25519, // Go 1.8 only
+				//	tls.X25519, // Go 1.8 only
 			},
 		},
 	}
