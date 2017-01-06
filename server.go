@@ -116,9 +116,7 @@ func (s *Server) Start() error {
 
 // StartTLS starts an https server on the given port
 // with tls cert/key from config keys.
-func (s *Server) StartTLS() error {
-	cert := s.Config("tls_cert")
-	key := s.Config("tls_key")
+func (s *Server) StartTLS(cert, key string) error {
 
 	// Set up a new http server
 	server := &http.Server{
