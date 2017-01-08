@@ -1,82 +1,109 @@
-// Package log provides a simple file and console log
+// Package log provides a structured, levelled logger interface
+// for use in server handlers, which handles multiple output streams.
+// A typical use might be to log everything to stderr, but to add another
+// logger to send important data off to
+// The Default logger simply logs to stderr, a local File logger is available,
+// and data can be extracted and sent elsewhere by additional loggers
+// (for example page hits to a stats service).
+//
+// Usage:
+// logger,err := log.NewStdErr()
+// log.Add(logger)
+// log.Error(log.V{"key":value,"key":value})
+//
 package log
 
 import (
-	"io"
-	stdlog "log"
-	"os"
-	"strings"
+	"time"
 )
 
-// We accept hashtags like #error in log messages, which can be used to filter messages
-// These tags can also be used to indicate the level of the message
-// NB if filter is set we only output messages containg filter string
+const (
+	// LevelKey is the key for setting level
+	LevelKey = "level"
+	// MessageKey is the key for a message
+	MessageKey = "msg"
+	// DurationKey is used by the Time function
+	DurationKey = "duration"
+	// ErrorKey is used for errors
+	ErrorKey = "error"
+)
 
-// Logger conforms with the server.Logger interface
-type Logger struct {
-	log    *stdlog.Logger
-	Filter string
+// Debug sends the key/value map at level Debug to all registered (log)gers.
+func Debug(values V) {
+	values[LevelKey] = LevelDebug
+	Log(values)
 }
 
-// New creates a new Logger which writes to a file and to stderr
-func New(path string, production bool) *Logger {
-	var logWriter io.Writer
-	stdlog.SetFlags(stdlog.Llongfile)
-	// doubleWriter writes to stdErr and to a file
-	logFile, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0640)
-	if err != nil {
-		logWriter = io.MultiWriter(os.Stderr)
-	} else {
-
-		// Do not write to Stderr in production
-		if production {
-			logWriter = io.MultiWriter(logFile)
-		} else {
-			logWriter = io.MultiWriter(os.Stderr, logFile)
-		}
-
-	}
-
-	// By default logger logs to console and a file
-	l := stdlog.New(logWriter, "", stdlog.Ldate|stdlog.Ltime)
-	if l == nil {
-		stdlog.Printf("Error setting up log at path %s", path)
-	}
-
-	logger := &Logger{
-		log:    l,
-		Filter: "",
-	}
-
-	logger.Printf("#info Opened log file at %s", path)
-	return logger
+// Info sends the key/value map at level Info to all registered loggers.
+func Info(values V) {
+	values[LevelKey] = LevelInfo
+	Log(values)
 }
 
-// Printf logs events selectively given our filter
-func (l *Logger) Printf(format string, args ...interface{}) {
-
-	if l.Filter == "" {
-		// If we have no filter, print all
-		l.writeLog(format, args...)
-	} else if strings.Contains(format, l.Filter) {
-		// if we have a filter, print only those messages which match it (e.g. only match #error in production)
-		l.writeLog(format, args...)
-	}
-
+// Error sends the key/value map at level Error to all registered loggers.
+func Error(values V) {
+	values[LevelKey] = LevelError
+	Log(values)
 }
 
-// Log events to the server log file and other output
-func (l *Logger) writeLog(format string, args ...interface{}) {
+// Fatal sends the key/value map at level Fatal to all registered loggers,
+// no other action is taken.
+func Fatal(values V) {
+	values[LevelKey] = LevelFatal
+	Log(values)
+}
 
-	if l.log != nil {
-		if strings.Contains(format, "%") {
-			l.log.Printf(format, args...)
-		} else {
-			l.log.Print(format)
-		}
-	} else {
-		// If we failed to create a log, just log something to stdout
-		stdlog.Printf(format, args...)
+// Time sends the key/value map to all registered loggers with an additional duration, start and end params set.
+func Time(start time.Time, values V) {
+	values[DurationKey] = time.Now().UTC().Sub(start)
+	Log(values)
+}
+
+// Log sends the key/value map to all registered loggers. If level is not set,
+// it defaults to LevelInfo.
+func Log(values V) {
+	_, ok := values[LevelKey]
+	if !ok {
+		values[LevelKey] = LevelInfo
 	}
 
+	for _, l := range loggers {
+		l.Log(values)
+	}
 }
+
+// Add adds the given logger to the list of outputs,
+// it should not be called from other goroutines.
+func Add(l StructuredLogger) {
+	loggers = append(loggers, l)
+}
+
+// Valid levels for logging.
+const (
+	LevelNone = iota
+	LevelDebug
+	LevelInfo
+	LevelError
+	LevelFatal
+)
+
+var (
+	// LevelNames is a list of human-readable for levels.
+	LevelNames = []string{"none", "debug", "info", "error", "fatal"}
+)
+
+// This variable stores multiple loggers, which may decide whether
+// to print or not depending on the level and/or message content.
+// They may log to a file, stderr, or over the network, and different
+// destinations may all log the same messages.
+var loggers []StructuredLogger
+
+// StructuredLogger defines an interface for loggers
+// which may be added with Add() to the list of outputs.
+type StructuredLogger interface {
+	Log(V)
+}
+
+// V is a shorthand for values - a map of structured key value pairs
+// usage: log.Warn(log.V{"user":1,"foo":"bar"})
+type V map[string]interface{}
