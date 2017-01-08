@@ -5,13 +5,55 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strconv"
+	"time"
 )
 
-// Port returns the port of the server
-func (s *Server) Port() int {
-	return s.port
+// Deprecated - use server/log pkg instead to log
+
+// Logger interface for a logger - deprecated for 2.0
+type Logger interface {
+	Printf(format string, args ...interface{})
 }
+
+// Logf logs the message with the given arguments to our internal logger
+func (s *Server) Logf(format string, v ...interface{}) {
+	s.Logger.Printf(format, v...)
+}
+
+// Log logs the message to our internal logger
+func (s *Server) Log(message string) {
+	s.Logf(message)
+}
+
+// Fatalf the message with the given arguments to our internal logger, and then exits with status 1
+func (s *Server) Fatalf(format string, v ...interface{}) {
+	s.Logger.Printf(format, v...)
+
+	// Now exit
+	os.Exit(1)
+}
+
+// Fatal logs the message, and then exits with status 1
+func (s *Server) Fatal(format string) {
+	s.Fatalf(format)
+}
+
+// Timef logs a time since starting, when used with defer at the start of a function to time
+// Usage: defer s.Timef("Completed %s in %s",time.Now(),args...)
+func (s *Server) Timef(format string, start time.Time, v ...interface{}) {
+	end := time.Since(start).String()
+	var args []interface{}
+	args = append(args, end)
+	args = append(args, v...)
+	s.Logf(format, args...)
+}
+
+// Deprecated - this config parsing (mostly internal to the server anyway)
+// has been moved to a new file and will be removed in 2.0
+// Instead of passing config to setup and thence to handlers via router context,
+// apps/handlers should use server/config to access it if required.
 
 // Mode returns the mode (production or development)
 func (s *Server) Mode() string {
@@ -95,6 +137,10 @@ func (s *Server) readConfig() error {
 
 	return nil
 }
+
+// Deprecated - the server relies on config for lots of settings
+// the port can be changed in config instead for development easily.
+// This flag will be removed in 2.0
 
 // readArguments reads command line arguments
 func (s *Server) readArguments() error {

@@ -1,4 +1,4 @@
-// Package server offers a simple server with logging and configs
+// Package server is a wrapper around the stdlib http server and x/autocert pkg.
 package server
 
 import (
@@ -13,22 +13,21 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
-// Logger interface for a simple logger (the stdlib log pkg and the fragmenta log pkg conform)
-type Logger interface {
-	Printf(format string, args ...interface{})
-}
-
-// Server holds the config and logger for the app
+// Server wraps the stdlib http server and x/autocert pkg with some setup.
 type Server struct {
-	// Our internal logger instance
-	Logger Logger
 
 	// Which port to serve on
 	port int
 
-	// Which env mode we're in, read from ENV variable
+	// Which mode we're in, read from ENV variable
 	production bool
 
+	// Deprecated Logging - due to be removed in 2.0
+	// Instead use the structured logging with server/log
+	Logger Logger
+
+	// Deprecated configs will be removed from the server object in 2.0
+	// Use server/config instead to read the config from app.
 	// Server configs - access with Config(string)
 	configProduction  map[string]string
 	configDevelopment map[string]string
@@ -66,37 +65,9 @@ func New() (*Server, error) {
 	return s, err
 }
 
-// Logf logs the message with the given arguments to our internal logger
-func (s *Server) Logf(format string, v ...interface{}) {
-	s.Logger.Printf(format, v...)
-}
-
-// Log logs the message to our internal logger
-func (s *Server) Log(message string) {
-	s.Logf(message)
-}
-
-// Fatalf the message with the given arguments to our internal logger, and then exits with status 1
-func (s *Server) Fatalf(format string, v ...interface{}) {
-	s.Logger.Printf(format, v...)
-
-	// Now exit
-	os.Exit(1)
-}
-
-// Fatal logs the message, and then exits with status 1
-func (s *Server) Fatal(format string) {
-	s.Fatalf(format)
-}
-
-// Timef logs a time since starting, when used with defer at the start of a function to time
-// Usage: defer s.Timef("Completed %s in %s",time.Now(),args...)
-func (s *Server) Timef(format string, start time.Time, v ...interface{}) {
-	end := time.Since(start).String()
-	var args []interface{}
-	args = append(args, end)
-	args = append(args, v...)
-	s.Logf(format, args...)
+// Port returns the port of the server
+func (s *Server) Port() int {
+	return s.port
 }
 
 // PortString returns a string port suitable for passing to http.Server
