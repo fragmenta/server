@@ -27,6 +27,7 @@ func NewStdErr(prefix string) (*Default, error) {
 		Prefix: prefix, // Treated as a time format if set
 		Level:  LevelDebug,
 		Writer: os.Stderr,
+		Color:  true,
 	}
 	return d, nil
 }
@@ -37,6 +38,7 @@ type Default struct {
 	Prefix string
 	Level  int
 	Writer io.Writer
+	Color  bool
 }
 
 // Log logs the key:value pairs given to the writer. Keys are sorted before
@@ -58,14 +60,29 @@ func (d *Default) Log(values V) {
 			d.WriteString("in " + duration.String() + " ")
 		}
 
-		// Now print other keys
+		// Now print other keys with colouring
+		var prefix, suffix string
 		keys := d.SortedKeys(values)
 		for _, k := range keys {
 			d.WriteString(k)
 			d.WriteString(Separator)
-			d.WriteString(fmt.Sprintf("%v ", values[k]))
+
+			switch k {
+			case "ip":
+				fallthrough
+			case "trace":
+				d.WriteString(fmt.Sprintf("%s%v%s ", TraceColor, values[k], ClearColors))
+			default:
+				d.WriteString(fmt.Sprintf("%v ", values[k]))
+			}
+
 		}
-		d.WriteString("#" + d.LevelName(l))
+
+		if d.Color {
+			prefix = d.LevelColor(l)
+			suffix = ClearColors
+		}
+		d.WriteString(fmt.Sprintf("%s#%v%s ", prefix, d.LevelName(l), suffix))
 
 		d.WriteString("\n")
 	}
@@ -88,6 +105,11 @@ func (d *Default) LevelValue(values V) int {
 // LevelName returns the human-readable name for this level.
 func (d *Default) LevelName(l int) string {
 	return LevelNames[l]
+}
+
+// LevelColor returns the human-readable colour for this level.
+func (d *Default) LevelColor(l int) string {
+	return LevelColors[l]
 }
 
 // SortedKeys returns an array of keys for a map sorted in alpha order,

@@ -16,10 +16,11 @@ import (
 // Server wraps the stdlib http server and x/autocert pkg with some setup.
 type Server struct {
 
-	// Which port to serve on
+	// Which port to serve on - in 2.0 pass as argument for New()
 	port int
 
 	// Which mode we're in, read from ENV variable
+	// Deprecated - due to be removed in 2.0
 	production bool
 
 	// Deprecated Logging - due to be removed in 2.0
@@ -53,6 +54,8 @@ func New() (*Server, error) {
 		Logger:            log.New(os.Stderr, "fragmenta: ", log.LstdFlags),
 	}
 
+	// Old style config read - this will be going away in Fragmenta 2.0
+	// use server/config instead from the app
 	err := s.readConfig()
 	if err != nil {
 		return s, err

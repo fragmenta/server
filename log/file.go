@@ -1,6 +1,7 @@
 package log
 
 import (
+	"errors"
 	"os"
 )
 
@@ -20,11 +21,16 @@ const (
 
 // NewFile creates a new file logger for the given path at Level Info.
 func NewFile(path string) (*File, error) {
+	if path == "" {
+		return nil, errors.New("log: null file path for file log")
+	}
+
 	f := &File{
 		Default: Default{
 			Prefix: "",
 			Level:  LevelInfo,
 			Writer: nil,
+			Color:  false,
 		},
 	}
 

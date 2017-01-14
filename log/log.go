@@ -14,6 +14,7 @@
 package log
 
 import (
+	"os"
 	"time"
 )
 
@@ -29,39 +30,39 @@ const (
 )
 
 // Debug sends the key/value map at level Debug to all registered (log)gers.
-func Debug(values V) {
+func Debug(values map[string]interface{}) {
 	values[LevelKey] = LevelDebug
 	Log(values)
 }
 
 // Info sends the key/value map at level Info to all registered loggers.
-func Info(values V) {
+func Info(values map[string]interface{}) {
 	values[LevelKey] = LevelInfo
 	Log(values)
 }
 
 // Error sends the key/value map at level Error to all registered loggers.
-func Error(values V) {
+func Error(values map[string]interface{}) {
 	values[LevelKey] = LevelError
 	Log(values)
 }
 
 // Fatal sends the key/value map at level Fatal to all registered loggers,
 // no other action is taken.
-func Fatal(values V) {
+func Fatal(values map[string]interface{}) {
 	values[LevelKey] = LevelFatal
 	Log(values)
 }
 
 // Time sends the key/value map to all registered loggers with an additional duration, start and end params set.
-func Time(start time.Time, values V) {
+func Time(start time.Time, values map[string]interface{}) {
 	values[DurationKey] = time.Now().UTC().Sub(start)
 	Log(values)
 }
 
 // Log sends the key/value map to all registered loggers. If level is not set,
 // it defaults to LevelInfo.
-func Log(values V) {
+func Log(values map[string]interface{}) {
 	_, ok := values[LevelKey]
 	if !ok {
 		values[LevelKey] = LevelInfo
@@ -90,6 +91,18 @@ const (
 var (
 	// LevelNames is a list of human-readable for levels.
 	LevelNames = []string{"none", "debug", "info", "error", "fatal"}
+
+	// NoColor determines if a terminal is colourable or not
+	NoColor = os.Getenv("TERM") == "dumb"
+
+	// LevelColors is a list of human-friendly terminal colors for levels.
+	LevelColors = []string{"\033[0m", "\033[34m", "\033[32m", "\033[33m", "\033[31m"}
+
+	// TraceColor sets a for IP addresses or request id
+	TraceColor = "\033[33m"
+
+	// ClearColors clears all formatting
+	ClearColors = "\033[0m"
 )
 
 // This variable stores multiple loggers, which may decide whether
@@ -104,6 +117,9 @@ type StructuredLogger interface {
 	Log(V)
 }
 
-// V is a shorthand for values - a map of structured key value pairs
-// usage: log.Warn(log.V{"user":1,"foo":"bar"})
+// Values is a map of structured key value pairs
+// usage: log.Warn(log.Values{"user":1,"foo":"bar"})
+type Values map[string]interface{}
+
+// V is a shorthand for values
 type V map[string]interface{}

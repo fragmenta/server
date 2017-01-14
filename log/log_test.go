@@ -159,8 +159,8 @@ func TestFile(t *testing.T) {
 		t.Fatalf("error deleting test.log file %s", err)
 	}
 
-	expected := "HYPERLOG: action:fatal #fatal\n"
-	if string(got) != expected {
+	expected := "HYPERLOG: action:fatal #fatal"
+	if !strings.HasPrefix(string(got), expected) {
 		t.Fatalf("error reading log file expected:\n%s got:\n%s\n", expected, string(got))
 	}
 

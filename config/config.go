@@ -79,6 +79,9 @@ func (c *Config) Configuration(m int) map[string]string {
 
 // Get returns a specific value or "" if no value
 func (c *Config) Get(key string) string {
+	if c == nil {
+		return ""
+	}
 	return c.configs[c.Mode][key]
 }
 
