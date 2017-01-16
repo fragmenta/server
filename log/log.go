@@ -27,6 +27,12 @@ const (
 	DurationKey = "duration"
 	// ErrorKey is used for errors
 	ErrorKey = "error"
+	// IPKey is used for IP addresses (for colouring)
+	IPKey = "ip"
+	// URLKey is used for identifying URLs (for filtering)
+	URLKey = "url"
+	// TraceKey is used for trace ids emitted in middleware
+	TraceKey = "trace"
 )
 
 // Debug sends the key/value map at level Debug to all registered (log)gers.

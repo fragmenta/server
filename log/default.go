@@ -25,7 +25,7 @@ const (
 func NewStdErr(prefix string) (*Default, error) {
 	d := &Default{
 		Prefix: prefix, // Treated as a time format if set
-		Level:  LevelDebug,
+		Level:  LevelInfo,
 		Writer: os.Stderr,
 		Color:  true,
 	}
@@ -35,57 +35,68 @@ func NewStdErr(prefix string) (*Default, error) {
 // Default defines a default logger which simply logs to Writer,
 // Writer is set to stderr, Level is LevelDebug and Prefix is empty by default.
 type Default struct {
+
+	// Prefix is used to prefix any log lines emitted.
 	Prefix string
-	Level  int
+
+	// Level is the level above which input is ignored.
+	Level int
+
+	// Writer is the output of this logger.
 	Writer io.Writer
-	Color  bool
+
+	// Color sets whether terminal colour instructions are emitted.
+	Color bool
 }
 
 // Log logs the key:value pairs given to the writer. Keys are sorted before
 // output in alphabetical order to ensure consistent results.
 func (d *Default) Log(values V) {
 	l := d.LevelValue(values)
-	if l >= d.Level {
-		// Start by writing the prefix (treated as a time format string)
-		d.WriteString(time.Now().UTC().Format(d.Prefix))
-
-		// If keys contains message, extract that first
-		msg, ok := values[MessageKey].(string)
-		if ok {
-			d.WriteString(msg + " ")
-		}
-		// If keys contains duration, extract that next
-		duration, ok := values[DurationKey].(time.Duration)
-		if ok {
-			d.WriteString("in " + duration.String() + " ")
-		}
-
-		// Now print other keys with colouring
-		var prefix, suffix string
-		keys := d.SortedKeys(values)
-		for _, k := range keys {
-			d.WriteString(k)
-			d.WriteString(Separator)
-
-			switch k {
-			case "ip":
-				fallthrough
-			case "trace":
-				d.WriteString(fmt.Sprintf("%s%v%s ", TraceColor, values[k], ClearColors))
-			default:
-				d.WriteString(fmt.Sprintf("%v ", values[k]))
-			}
-
-		}
-
-		if d.Color {
-			prefix = d.LevelColor(l)
-			suffix = ClearColors
-		}
-		d.WriteString(fmt.Sprintf("%s#%v%s ", prefix, d.LevelName(l), suffix))
-
-		d.WriteString("\n")
+	if l < d.Level {
+		return
 	}
+
+	// Start by writing the prefix (treated as a time format string)
+	d.WriteString(time.Now().UTC().Format(d.Prefix))
+
+	// If keys contains message, extract that first
+	msg, ok := values[MessageKey].(string)
+	if ok {
+		d.WriteString(msg + " ")
+	}
+	// If keys contains duration, extract that next
+	duration, ok := values[DurationKey].(time.Duration)
+	if ok {
+		d.WriteString("in " + duration.String() + " ")
+	}
+
+	// Now print other keys with colouring
+	var prefix, suffix string
+	keys := d.SortedKeys(values)
+	for _, k := range keys {
+		d.WriteString(k)
+		d.WriteString(Separator)
+
+		switch k {
+		case IPKey:
+			fallthrough
+		case TraceKey:
+			d.WriteString(fmt.Sprintf("%s%v%s ", TraceColor, values[k], ClearColors))
+		default:
+			d.WriteString(fmt.Sprintf("%v ", values[k]))
+		}
+
+	}
+
+	if d.Color {
+		prefix = d.LevelColor(l)
+		suffix = ClearColors
+	}
+	d.WriteString(fmt.Sprintf("%s#%v%s ", prefix, d.LevelName(l), suffix))
+
+	d.WriteString("\n")
+
 }
 
 // WriteString writes the string to the Writer.

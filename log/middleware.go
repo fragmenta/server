@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -56,10 +57,33 @@ func Middleware(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		requestID := newRequestID()
 		r = SetRequestID(r, requestID) // Sets on context for handlers
-		Info(Values{"msg": "<- Request", "method": r.Method, "url": r.RequestURI, "len": r.ContentLength, "ip": r.RemoteAddr, "trace": requestID.String()})
+
+		level := LevelInfo
+
+		// For assets etc, use level debug as they clutter up logs
+		if r.URL.Path == "/favicon.ico" || strings.HasPrefix(r.URL.Path, "/assets") {
+			level = LevelDebug
+		}
+
+		Log(Values{
+			MessageKey: "<- Request",
+			"method":   r.Method,
+			URLKey:     r.RequestURI,
+			"len":      r.ContentLength,
+			IPKey:      r.RemoteAddr,
+			TraceKey:   requestID.String(),
+			LevelKey:   level,
+		})
+
 		start := time.Now()
 		h(w, r)
-		Time(start, Values{"msg": "-> Response", "url": r.RequestURI, "trace": requestID.String()})
+
+		Time(start, Values{
+			MessageKey: "-> Response",
+			URLKey:     r.RequestURI,
+			TraceKey:   requestID.String(),
+			LevelKey:   level,
+		})
 	}
 
 }
