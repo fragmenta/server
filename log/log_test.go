@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
@@ -82,10 +84,12 @@ func TestDefault(t *testing.T) {
 	}
 	var recorder2 bytes.Buffer
 	auxillaryLogger.Writer = &recorder2
+	auxillaryLogger.Level = LevelDebug
 	Add(auxillaryLogger)
 
 	// Write out a string at debug level
 	Debug(logTests[0].values)
+	Debug(logTests[1].values)
 
 	result, err := recorder.ReadString('\n')
 	if err != nil && err != io.EOF {
@@ -172,8 +176,10 @@ func TestInvalidLevels(t *testing.T) {
 	if err != nil {
 		t.Fatalf("log: error creating default logger :%s", err)
 	}
+	// Write to a buffer to avoid spamming stdout
+	var recorder2 bytes.Buffer
+	logger.Writer = &recorder2
 	Add(logger)
-
 	Debug(V{LevelKey: 2})
 	Info(V{LevelKey: nil})
 	Error(V{ErrorKey: nil})
@@ -184,4 +190,33 @@ func TestInvalidLevels(t *testing.T) {
 	logger.LevelValue(V{LevelKey: -5e21})
 	logger.LevelValue(V{LevelKey: t})
 	logger.LevelValue(V{LevelKey: nil})
+}
+
+// TestTrace tests tracing using the context pkg is working correctly.
+func TestTrace(t *testing.T) {
+	logger, err := NewStdErr("myapp: ")
+	if err != nil {
+		t.Fatalf("log: error creating default logger :%s", err)
+	}
+	// Write to a buffer to avoid spamming stdout
+	var recorder2 bytes.Buffer
+	logger.Writer = &recorder2
+	Add(logger)
+
+	// Setup request and recorder
+	r := httptest.NewRequest("GET", "/users/create", nil)
+	w := httptest.NewRecorder()
+
+	// Add to context for request
+	fn := Middleware(mockHandler)
+
+	// Call middleware
+	fn(w, r)
+
+	// Get value back out of context
+	Trace(r)
+}
+
+func mockHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("hello world"))
 }
