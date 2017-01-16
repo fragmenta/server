@@ -16,7 +16,7 @@ type RequestID struct {
 
 // String returns a string formatting for the request id.
 func (r *RequestID) String() string {
-	return fmt.Sprintf("%X-%X", r.id[0:4], r.id[4:8])
+	return fmt.Sprintf("%X-%X-%X-%X", r.id[0:2], r.id[2:4], r.id[4:6], r.id[6:8])
 }
 
 // NewRequestID returns a new random request id.
