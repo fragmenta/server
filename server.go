@@ -82,8 +82,8 @@ func (s *Server) PortString() string {
 func (s *Server) Start() error {
 	server := &http.Server{
 		Addr:         s.PortString(),
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 60 * time.Second,
 	}
 	return server.ListenAndServe()
 }
@@ -126,12 +126,12 @@ func (s *Server) ConfiguredTLSServer(certManager *autocert.Manager) *http.Server
 	return &http.Server{
 		// Set the port in the preferred string format
 		Addr: s.PortString(),
-		/*
-			// The default server from net/http has no timeouts
-			ReadTimeout:  20 * time.Second,
-			WriteTimeout: 20 * time.Second,
-			IdleTimeout:  120 * time.Second,
-		*/
+
+		// The default server from net/http has no timeouts
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 60 * time.Second,
+		//	IdleTimeout:  120 * time.Second,
+
 		// This TLS config follows recommendations in the above article
 		TLSConfig: &tls.Config{
 			// Pass in a cert manager if you want one set
