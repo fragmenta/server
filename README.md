@@ -7,6 +7,7 @@ A wrapper for the net/http server offering a few other features:
 * Scheduling of tasks at specific times of day and intervals
 * Uses the new request context in the Go stdlib
 * Add tracing to requests so that you can follow a request id through handlers
+* Requires Go 1.8
 
 Example usage:
 
