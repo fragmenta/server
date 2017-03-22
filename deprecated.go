@@ -63,6 +63,11 @@ func (s *Server) Mode() string {
 	return "Development"
 }
 
+// SetProduction sets the mode manually to SetProduction
+func (s *Server) SetProduction(value bool) {
+	s.production = value
+}
+
 // Production tells the caller if this server is in production mode or not?
 func (s *Server) Production() bool {
 	return s.production
