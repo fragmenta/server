@@ -76,7 +76,7 @@ func BadRequestError(e error, args ...string) *StatusError {
 // Error returns a new StatusError with code StatusInternalServerError and a generic message
 func Error(e error, s int, t string, m string) *StatusError {
 	// Get runtime info - use zero values if none available
-	_, f, l, _ := runtime.Caller(3)
+	_, f, l, _ := runtime.Caller(2)
 	err := &StatusError{
 		Status:  s,
 		Err:     e,
