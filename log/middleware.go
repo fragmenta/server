@@ -61,7 +61,9 @@ func Middleware(h http.HandlerFunc) http.HandlerFunc {
 		level := LevelInfo
 
 		// For assets etc, use level debug as they clutter up logs
-		if r.URL.Path == "/favicon.ico" || strings.HasPrefix(r.URL.Path, "/assets") {
+		if r.URL.Path == "/favicon.ico" ||
+			strings.HasPrefix(r.URL.Path, "/assets") ||
+			strings.HasPrefix(r.URL.Path, "/stats") {
 			level = LevelDebug
 		}
 
