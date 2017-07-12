@@ -27,7 +27,7 @@ func NewFile(path string) (*File, error) {
 
 	f := &File{
 		Default: Default{
-			Prefix: "",
+			Prefix: PrefixDateTime,
 			Level:  LevelInfo,
 			Writer: nil,
 			Color:  false,
