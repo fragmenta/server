@@ -81,21 +81,53 @@ func (s *Server) PortString() string {
 // Start starts an http server on the given port
 func (s *Server) Start() error {
 	server := &http.Server{
-		Addr:         s.PortString(),
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 60 * time.Second,
+		// Set the port in the preferred string format
+		Addr: s.PortString(),
+
+		// The default server from net/http has no timeouts - set some limits
+		ReadHeaderTimeout: 30 * time.Second,
+		ReadTimeout:       60 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       10 * time.Second, // IdleTimeout was introduced in Go 1.8
+
 	}
 	return server.ListenAndServe()
 }
 
 // StartTLS starts an https server on the given port
 // with tls cert/key from config keys.
+// Settings based on an article by Filippo Valsorda.
+// https://blog.cloudflare.com/exposing-go-on-the-internet/
 func (s *Server) StartTLS(cert, key string) error {
 
 	// Set up a new http server
 	server := &http.Server{
 		// Set the port in the preferred string format
 		Addr: s.PortString(),
+
+		// The default server from net/http has no timeouts - set some limits
+		ReadHeaderTimeout: 30 * time.Second,
+		ReadTimeout:       60 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       10 * time.Second, // IdleTimeout was introduced in Go 1.8
+
+		// This TLS config follows recommendations in the above article
+		TLSConfig: &tls.Config{
+			// VersionTLS11 or VersionTLS12 would exclude many browsers
+			// inc. Android 4.x, IE 10, Opera 12.17, Safari 6
+			// So unfortunately not acceptable as a default yet
+			// Current default here for clarity
+			MinVersion: tls.VersionTLS10,
+
+			// Causes servers to use Go's default ciphersuite preferences,
+			// which are tuned to avoid attacks. Does nothing on clients.
+			PreferServerCipherSuites: true,
+			// Only use curves which have assembly implementations
+			CurvePreferences: []tls.CurveID{
+				tls.CurveP256,
+				tls.X25519, // Go 1.8 only
+			},
+		},
 	}
 
 	return server.ListenAndServeTLS(cert, key)
@@ -127,10 +159,11 @@ func (s *Server) ConfiguredTLSServer(certManager *autocert.Manager) *http.Server
 		// Set the port in the preferred string format
 		Addr: s.PortString(),
 
-		// The default server from net/http has no timeouts
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 60 * time.Second,
-		//	IdleTimeout:  120 * time.Second,
+		// The default server from net/http has no timeouts - set some limits
+		ReadHeaderTimeout: 30 * time.Second,
+		ReadTimeout:       60 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       10 * time.Second, // IdleTimeout was introduced in Go 1.8
 
 		// This TLS config follows recommendations in the above article
 		TLSConfig: &tls.Config{
@@ -150,7 +183,7 @@ func (s *Server) ConfiguredTLSServer(certManager *autocert.Manager) *http.Server
 			// Only use curves which have assembly implementations
 			CurvePreferences: []tls.CurveID{
 				tls.CurveP256,
-				//	tls.X25519, // Go 1.8 only
+				tls.X25519, // Go 1.8 only
 			},
 		},
 	}
