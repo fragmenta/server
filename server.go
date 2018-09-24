@@ -87,7 +87,7 @@ func (s *Server) Start() error {
 		// The default server from net/http has no timeouts - set some limits
 		ReadHeaderTimeout: 30 * time.Second,
 		ReadTimeout:       60 * time.Second,
-		WriteTimeout:      30 * time.Second,
+		WriteTimeout:      60 * time.Second,
 		IdleTimeout:       10 * time.Second, // IdleTimeout was introduced in Go 1.8
 
 	}
