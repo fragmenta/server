@@ -108,7 +108,7 @@ func (s *Server) StartTLS(cert, key string) error {
 		// The default server from net/http has no timeouts - set some limits
 		ReadHeaderTimeout: 30 * time.Second,
 		ReadTimeout:       60 * time.Second,
-		WriteTimeout:      30 * time.Second,
+		WriteTimeout:      60 * time.Second,
 		IdleTimeout:       10 * time.Second, // IdleTimeout was introduced in Go 1.8
 
 		// This TLS config follows recommendations in the above article
@@ -162,7 +162,7 @@ func (s *Server) ConfiguredTLSServer(certManager *autocert.Manager) *http.Server
 		// The default server from net/http has no timeouts - set some limits
 		ReadHeaderTimeout: 30 * time.Second,
 		ReadTimeout:       60 * time.Second,
-		WriteTimeout:      30 * time.Second,
+		WriteTimeout:      60 * time.Second,
 		IdleTimeout:       10 * time.Second, // IdleTimeout was introduced in Go 1.8
 
 		// This TLS config follows recommendations in the above article
