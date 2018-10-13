@@ -208,5 +208,5 @@ type redirectHandler struct {
 
 // ServeHTTP on this handler simply redirects to the main site
 func (m *redirectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, m.host+r.URL.String(), http.StatusFound)
+	http.Redirect(w, r, m.host+r.URL.String(), http.StatusMovedPermanently)
 }
