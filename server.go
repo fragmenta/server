@@ -133,6 +133,28 @@ func (s *Server) StartTLS(cert, key string) error {
 	return server.ListenAndServeTLS(cert, key)
 }
 
+// StartTLSAuto starts an https server on the given port
+// by requesting certs from an ACME provider using the http-01 challenge.
+// it also starts a server on the port 80 to listen for challenges and redirect
+// The server must be on a public IP which matches the
+// DNS for the domains.
+func (s *Server) StartTLSAuto(email, domains string) error {
+	autocertDomains := strings.Split(domains, " ")
+	certManager := &autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		Email:      email,                                      // Email for problems with certs
+		HostPolicy: autocert.HostWhitelist(autocertDomains...), // Domains to request certs for
+		Cache:      autocert.DirCache("secrets"),               // Cache certs in secrets folder
+	}
+	// Handle all :80 traffic using autocert to allow http-01 challenge responses
+	go func() {
+		http.ListenAndServe(":80", certManager.HTTPHandler(nil))
+	}()
+
+	server := s.ConfiguredTLSServer(certManager)
+	return server.ListenAndServeTLS("", "")
+}
+
 // StartTLSAutocert starts an https server on the given port
 // by requesting certs from an ACME provider.
 // The server must be on a public IP which matches the
