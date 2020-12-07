@@ -96,8 +96,6 @@ func (s *Server) Start() error {
 
 // StartTLS starts an https server on the given port
 // with tls cert/key from config keys.
-// Settings based on an article by Filippo Valsorda.
-// https://blog.cloudflare.com/exposing-go-on-the-internet/
 func (s *Server) StartTLS(cert, key string) error {
 
 	// Set up a new http server
@@ -113,7 +111,7 @@ func (s *Server) StartTLS(cert, key string) error {
 
 		// This TLS config follows recommendations in the above article
 		TLSConfig: &tls.Config{
-			// VersionTLS11 or VersionTLS12 would exclude many browsers
+			// VersionTLS12 would exclude many browsers
 			// inc. Android 4.x, IE 10, Opera 12.17, Safari 6
 			// So unfortunately not acceptable as a default yet
 			// Current default here for clarity
@@ -126,6 +124,50 @@ func (s *Server) StartTLS(cert, key string) error {
 			CurvePreferences: []tls.CurveID{
 				tls.CurveP256,
 				tls.X25519, // Go 1.8 only
+			},
+		},
+	}
+
+	return server.ListenAndServeTLS(cert, key)
+}
+
+// StartTLSModern starts an https server on the given port
+// with tls cert/key from config keys.
+// TLS version is restricted to VersionTLS12 and cipher suites to known secure ones
+// this attains an A+ score at https://www.ssllabs.com/
+// while remaining compatible with most older clients
+func (s *Server) StartTLSModern(cert, key string) error {
+
+	// Set up a new http server
+	server := &http.Server{
+		// Set the port in the preferred string format
+		Addr: s.PortString(),
+
+		// The default server from net/http has no timeouts - set some limits
+		ReadHeaderTimeout: 30 * time.Second,
+		ReadTimeout:       60 * time.Second,
+		WriteTimeout:      60 * time.Second,
+		IdleTimeout:       10 * time.Second, // IdleTimeout was introduced in Go 1.8
+
+		// This TLS config follows recommendations in the above article
+		TLSConfig: &tls.Config{
+			// Require VersionTLS12 - this will exclude older browsers like Safari 5, IE 6
+			// As of 2020 all browsers require this version because of vulnerabilities in 1.1
+			MinVersion: tls.VersionTLS12,
+			// Use Go's default ciphersuite preferences, which are tuned to avoid attacks.
+			PreferServerCipherSuites: true,
+			// Limit Curves to known secure ones
+			CurvePreferences: []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+			// Limit CipherSuites to known secure ones
+			// TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 is included for compatability reasons
+			CipherSuites: []uint16{
+				tls.TLS_CHACHA20_POLY1305_SHA256,
+				tls.TLS_AES_256_GCM_SHA384,
+				tls.TLS_AES_128_GCM_SHA256,
+				tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+				tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
 			},
 		},
 	}
