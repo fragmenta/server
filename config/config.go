@@ -118,6 +118,11 @@ func Production() bool {
 	return Current.Production()
 }
 
+// Development returns true if the config is not Test or Production
+func Development() bool {
+	return Current.Mode == ModeDevelopment
+}
+
 // Configuration returns all the configuration key/values for a given mode.
 func Configuration(m int) map[string]string {
 	return Current.Configuration(m)
