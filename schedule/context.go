@@ -3,7 +3,7 @@ package schedule
 
 // Logger Interface for a simple logger (the stdlib log pkg and the fragmenta log pkg conform)
 type Logger interface {
-	Printf(format string, args ...interface{})
+	Printf(format string, args ...any)
 }
 
 // Config Interface to retreive configuration details of the server
@@ -23,7 +23,7 @@ type ActionContext struct {
 	config Config
 
 	// Arbitrary user data stored in a map
-	data map[string]interface{}
+	data map[string]any
 }
 
 // NewContext returns a new context initialised with the given interfaces
@@ -31,12 +31,12 @@ func NewContext(l Logger, c Config) *ActionContext {
 	return &ActionContext{
 		logger: l,
 		config: c,
-		data:   make(map[string]interface{}),
+		data:   make(map[string]any),
 	}
 }
 
 // Logf logs the given message and arguments using our logger
-func (c *ActionContext) Logf(format string, v ...interface{}) {
+func (c *ActionContext) Logf(format string, v ...any) {
 	c.logger.Printf(format, v...)
 }
 
@@ -56,11 +56,11 @@ func (c *ActionContext) Production() bool {
 }
 
 // Set saves arbitrary data for this request
-func (c *ActionContext) Set(key string, data interface{}) {
+func (c *ActionContext) Set(key string, data any) {
 	c.data[key] = data
 }
 
 // Get retreives arbitrary data for this request
-func (c *ActionContext) Get(key string) interface{} {
+func (c *ActionContext) Get(key string) any {
 	return c.data[key]
 }

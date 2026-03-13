@@ -14,11 +14,11 @@ import (
 
 // Logger interface for a logger - deprecated for 2.0
 type Logger interface {
-	Printf(format string, args ...interface{})
+	Printf(format string, args ...any)
 }
 
 // Logf logs the message with the given arguments to our internal logger
-func (s *Server) Logf(format string, v ...interface{}) {
+func (s *Server) Logf(format string, v ...any) {
 	s.Logger.Printf(format, v...)
 }
 
@@ -28,7 +28,7 @@ func (s *Server) Log(message string) {
 }
 
 // Fatalf the message with the given arguments to our internal logger, and then exits with status 1
-func (s *Server) Fatalf(format string, v ...interface{}) {
+func (s *Server) Fatalf(format string, v ...any) {
 	s.Logger.Printf(format, v...)
 
 	// Now exit
@@ -42,9 +42,9 @@ func (s *Server) Fatal(format string) {
 
 // Timef logs a time since starting, when used with defer at the start of a function to time
 // Usage: defer s.Timef("Completed %s in %s",time.Now(),args...)
-func (s *Server) Timef(format string, start time.Time, v ...interface{}) {
+func (s *Server) Timef(format string, start time.Time, v ...any) {
 	end := time.Since(start).String()
-	var args []interface{}
+	var args []any
 	args = append(args, end)
 	args = append(args, v...)
 	s.Logf(format, args...)

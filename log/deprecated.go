@@ -56,7 +56,7 @@ func New(path string, production bool) *Logger {
 }
 
 // Printf logs events selectively given our filter
-func (l *Logger) Printf(format string, args ...interface{}) {
+func (l *Logger) Printf(format string, args ...any) {
 
 	if l.Filter == "" {
 		// If we have no filter, print all
@@ -69,7 +69,7 @@ func (l *Logger) Printf(format string, args ...interface{}) {
 }
 
 // Log events to the server log file and other output
-func (l *Logger) writeLog(format string, args ...interface{}) {
+func (l *Logger) writeLog(format string, args ...any) {
 
 	if l.log != nil {
 		if strings.Contains(format, "%") {

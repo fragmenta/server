@@ -15,16 +15,16 @@ type Context interface {
 	Production() bool
 
 	// Store arbitrary data for this request
-	Set(key string, data interface{})
+	Set(key string, data any)
 
 	// Retreive arbitrary data for this request
-	Get(key string) interface{}
+	Get(key string) any
 
 	// Log a message
 	Log(message string)
 
 	// Log a format and arguments
-	Logf(format string, v ...interface{})
+	Logf(format string, v ...any)
 }
 
 // ScheduledAction is the function type passed in to be executed at the given time
