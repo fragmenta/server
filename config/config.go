@@ -72,6 +72,16 @@ func (c *Config) Production() bool {
 	return c.Mode == ModeProduction
 }
 
+// Development returns true if current config is development.
+func (c *Config) Development() bool {
+	return c.Mode == ModeDevelopment
+}
+
+// Testing returns true if current config is test.
+func (c *Config) Testing() bool {
+	return c.Mode == ModeTest
+}
+
 // Configuration returns all the configuration key/values for a given mode.
 func (c *Config) Configuration(m int) map[string]string {
 	return c.configs[c.Mode]
@@ -115,12 +125,17 @@ func (c *Config) Config(key string) string {
 
 // Production returns true if current config is production.
 func Production() bool {
-	return Current.Production()
+	return Current.Mode == ModeProduction
 }
 
-// Development returns true if the config is not Test or Production
+// Development returns true if the config is Development
 func Development() bool {
 	return Current.Mode == ModeDevelopment
+}
+
+// Testing returns true if the config is not Test or Production
+func Testing() bool {
+	return Current.Mode == ModeTest
 }
 
 // Configuration returns all the configuration key/values for a given mode.
